@@ -378,19 +378,37 @@ odoo.define("web_timeline.TimelineRenderer", function (require) {
                         return events;
                     }
                     const groups = [];
+                    groups.push({id: -1, content: _t("<b>UNASSIGNED</b>")})
                     for (const evt of events) {
-                        const group2 = evt[group_bys[1]]
-                        if (group2) {
-                            const value = JSON.parse(group2);
-                            const group = _.find(groups, (existing_group) => existing_group.id === value[0].id);
-                            if (group) {
+                        const group_name = evt[group_bys[0]];
+                        if (group_name) {
+                            if (group_name instanceof Array) {
+                                const group = _.find(
+                                    groups,
+                                    (existing_group) => existing_group.id === group_name[0]
+                                );
+                                if (_.isUndefined(group)) {
+                                    groups.push({
+                                        id: group_name[0],
+                                        content: group_name[1],
+                                    });
+                                }
+                            }
+                        }
+                        if (group_bys[1]) {
+                            const group2 = evt[group_bys[1]]
+                            if (group2) {
+                                const value = JSON.parse(group2);
+                                const group = _.find(groups, (existing_group) => existing_group.id === value[0].id);
+                                if (group) {
 
-                            } else {
-                                groups.push({
-                                    id: value[0].id,
-                                    treeLevel: value[0].treeLevel,
-                                    content: value[0].content,
-                                });
+                                } else {
+                                    groups.push({
+                                        id: value[0].id,
+                                        treeLevel: value[0].treeLevel,
+                                        content: value[0].content,
+                                    });
+                                }
                             }
                         }
                     }
@@ -449,6 +467,11 @@ odoo.define("web_timeline.TimelineRenderer", function (require) {
                 event_data_transform: function (evt) {
                     const [date_start, date_stop] = this._get_event_dates(evt);
                     let group = evt[this.last_group_bys[0]];
+                    console.log("_________GRUPO______________");
+                    console.log(group);
+                    console.log(group instanceof Array);
+                    console.log("_________GRUPO______________");
+
                     if (group && group instanceof Array) {
                         group = _.first(group);
                     } else {
